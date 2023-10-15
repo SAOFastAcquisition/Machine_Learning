@@ -17,15 +17,18 @@ def grad_loss_func(_marg_i, _x_i, _y_i):
     return _grad
 
 
-def momentum_meth(_nuy, _gamma, _grad_loss):
-    _nyu = _nuy * _gamma + eta * (1 - _gamma) * _grad_loss
+def rms_meth(_g, _gamma, _grad_loss):
+
+    _g = _g * _gamma + (1 - _gamma) * _grad_loss * _grad_loss
+    _nyu = etha0 * _grad_loss / (np.sqrt(_g) + eps)
     return _nyu
 
 
-eta0 = 0.001
+etha0 = 0.02
+eps = 0.1
 n = 1000
 n_mem = 300
-gamma = (n_mem - 1) / (n_mem + 1)
+gamma = 0.01     # (n_mem - 1) / (n_mem + 1)
 lambd = 0.01    # 2 / (n + 1)
 x_train = [[10, 50], [20, 30], [25, 30], [20, 60], [15, 70], [40, 40], [30, 45], [20, 45], [40, 30], [7, 35]]
 x_train = np.array([s + [1] for s in x_train])
@@ -34,17 +37,17 @@ len_train = len(y_train)
 
 w = np.array([0 for i in range(3)])                                 # Инициализация начальных коэффициентов
 margin_init = [np.dot(x, w) * y for x, y in zip(x_train, y_train)]  # Строка отступов для размеченной выборки
-q = quality_func(margin_init)                                       # Значение функции потерь при заданных w
+q = quality_func(margin_init)                                      # Значение функции потерь при заданных w
+g = q * q
 q_plot = []
 nyu = 0
-eta = eta0
+etha = etha0
 for j in range(n):
     i = random.randint(0, 9)
     margin = np.dot(x_train[i], w) * y_train[i]                 # Отступ для i-того члена выборки
     grad_loss = grad_loss_func(margin, x_train[i], y_train[i])  # Функция потерь для него же по SGD
-    eta = eta0 * (1 - j / n)        # eta0 * np.exp(- j / n)     # Модификация шага по ходу работы
-    # nyu = eta * grad_loss                                     # Изменение w по чистому SGD
-    nyu = momentum_meth(nyu, gamma, grad_loss)                  # Изменение w с применением метода momentum
+    etha = etha0 * (1 - j / n)        # eta0 * np.exp(- j / n)     # Модификация шага по ходу работы
+    nyu = rms_meth(g, gamma, grad_loss)                  # Изменение w с применением метода momentum
     w = w - nyu
     margin = np.dot(x_train[i], w) * y_train[i]
     eps = loss_func(margin)
