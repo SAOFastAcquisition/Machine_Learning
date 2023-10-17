@@ -59,17 +59,26 @@ line_y = [- w[0] / w[1] * x - w[2] / w[1] for x in line_x]
 x_0 = x_train[y_train == 1]  # формирование точек для 1-го
 x_1 = x_train[y_train == -1]  # и 2-го классов
 
-plt.scatter(x_0[:, 0], x_0[:, 1], color='red')
-plt.scatter(x_1[:, 0], x_1[:, 1], color='blue')
-plt.plot(line_x, line_y, color='green')
+fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+ax = axes[0]
+# ax0 = fig.add_subplot(1, 2, 2)
 
-plt.xlim([0, 45])
-plt.ylim([0, 75])
-plt.ylabel("длина")
-plt.xlabel("ширина")
-plt.grid(True)
-plt.show()
+ax.scatter(x_0[:, 0], x_0[:, 1], color='red', label='Гусеницы')
+ax.scatter(x_1[:, 0], x_1[:, 1], color='blue', label='Коровки')
+ax.plot(line_x, line_y, color='green', lw=1.0)
 
-plt.plot(q_plot)
-plt.grid(True)
+ax.set_xlim(0, 45)
+ax.set_ylim(0, 75)
+ax.set_ylabel("длина")
+ax.set_xlabel("ширина")
+ax.set_title('Классификация', fontsize=16)
+ax.legend(loc='lower right')
+ax.grid(True)
+
+axes[1].plot(q_plot, color='black', linewidth=1.0)
+axes[1].set_xlabel("иттерация")
+axes[1].set_ylabel("функция ошибки")
+axes[1].set_title('Ошибка')
+axes[1].grid(True)
+
 plt.show()
