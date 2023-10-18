@@ -23,7 +23,7 @@ def quality_func(_margin):
 
 def grad_loss_func(_marg_i, _x_i, _y_i):
     _a = np.exp(_marg_i)
-    _grad = -2 / (1 + _a) ** 2 * _a * _x_i * _y_i
+    _grad = -2 / (1 + _a) ** 2 * _a * _x_i
     return _grad
 
 
@@ -39,10 +39,10 @@ y = 1 / (1 + 10 * np.square(x))
 
 N = 7                   # Polynomial range
 L = 0.8                 # Weight for polynomial coefficients
-etha0 = 0.0000000001       # Initial step changing of w
+etha0 = 0.000000000001       # Initial step changing of w
 lambd = 0.0001          # Память при подсчете эмпирического риска
-gamma = 0.9999          # Память при подсчете нормирующего множителя приращения коэффициентов
-eps0 = 0.01             # Слагаемое для избежания деления на "0"
+gamma = 0.99995          # Память при подсчете нормирующего множителя приращения коэффициентов
+eps0 = 0.001             # Слагаемое для избежания деления на "0"
 n_iter = 50000
 
 X = np.array([[a ** n for n in range(N + 1)] for a in x])   # Вектора-аргументы размеченной последовательности
