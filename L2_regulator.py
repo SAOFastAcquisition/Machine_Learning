@@ -14,39 +14,46 @@ def predict_poly(_x, _koeff):
 
 
 def loss_func(_marg_i):
-    return 2 / (1 + np.exp(_marg_i))
+    return _marg_i ** 2
+    # return (2 / (1 + np.exp(_marg_i)) - 1) ** 2
+    # return 2 / (1 + np.exp(_marg_i))
 
 
 def quality_func(_margin):
-    return np.sum(2 / (1 + np.exp(_margin))) / len(_margin)
+    return np.sum(_margin ** 2) / len(_margin)
+    # return np.sum((2 / (1 + np.exp(_margin)) - 1) ** 2) / len(_margin)
+    # return np.sum(2 / (1 + np.exp(_margin))) / len(_margin)
 
 
-def grad_loss_func(_marg_i, _x_i, _y_i):
-    _a = np.exp(_marg_i)
-    _grad = -2 / (1 + _a) ** 2 * _a * _x_i
+def grad_loss_func(_marg_i, _x_i):
+    _grad = 2 * _marg_i * _x_i
+    # _a = np.exp(_marg_i)
+    # _grad = -4 * (2 / (1 + _a) - 1) * _a / (1 + _a) ** 2 * _x_i
+    # _grad = -2 / (1 + _a) ** 2 * _a * _x_i
     return _grad
 
 
 def rms_meth(_g, _gamma, _grad_loss):
     _g = _g * _gamma + (1 - _gamma) * _grad_loss * _grad_loss
     _nyu = etha * _grad_loss / (np.sqrt(_g) + eps0)
-    return _nyu
+    return _nyu, _g
 
 
         # Model
 x = np.arange(0, 10.1, 0.1)
 y = 1 / (1 + 10 * np.square(x))
 
-N = 7                   # Polynomial range
+N = 8                   # Polynomial range
 L = 0.8                 # Weight for polynomial coefficients
-etha0 = 0.000000000001       # Initial step changing of w
+etha0 = 0.00000001       # Initial step changing of w
 lambd = 0.0001          # Память при подсчете эмпирического риска
-gamma = 0.99995          # Память при подсчете нормирующего множителя приращения коэффициентов
-eps0 = 0.001             # Слагаемое для избежания деления на "0"
-n_iter = 50000
+gamma = 0.9995          # Память при подсчете нормирующего множителя приращения коэффициентов
+eps0 = 0.0001             # Слагаемое для избежания деления на "0"
+n_iter = 150000
 
 X = np.array([[a ** n for n in range(N + 1)] for a in x])   # Вектора-аргументы размеченной последовательности
-w = np.zeros(N + 1)                                         # Initial w
+# w = np.zeros(N + 1)                                         # Initial w
+w = np.array([1 / 10 ** n for n in range(N + 1)])
 Y = np.dot(X, w)                                            # Рассчитанные по w выходные значения
 
 xx = x[:: 2]            # Аргументы размеченной последовательности
@@ -65,9 +72,9 @@ for k in range(n_iter):
     margin_i = np.dot(x_i, w) - yy[i]               # Отклонение предсказания от размеченного отклика
     Li = loss_func(margin_i)                        # Функция потерь для i-того члена размеч. последоват.
     etha = etha0 * (1 - k / n_iter)
-    grad_Li = grad_loss_func(margin_i, x_i, yy[i])  # Градиент функции потерь
+    grad_Li = grad_loss_func(margin_i, x_i)  # Градиент функции потерь
 
-    nyu = rms_meth(g, gamma, grad_Li)
+    nyu, g = rms_meth(g, gamma, grad_Li)
     w = w - nyu                                     # etha0 * (1 - k / n_iter) * grad_Li
 
     # Q = Li * lambd + (1 - lambd) * Q
