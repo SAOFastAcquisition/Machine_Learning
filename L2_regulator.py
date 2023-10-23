@@ -14,19 +14,19 @@ def predict_poly(_x, _koeff):
 
 
 def loss_func(_marg_i):
-    return _marg_i ** 2
+    return _marg_i ** 2 + L * np.dot(w.T, w) / 2
     # return (2 / (1 + np.exp(_marg_i)) - 1) ** 2
     # return 2 / (1 + np.exp(_marg_i))
 
 
 def quality_func(_margin):
-    return np.sum(_margin ** 2) / len(_margin)
+    return np.sum(_margin ** 2) / len(_margin) + np.dot(w.T, w) * L / 2
     # return np.sum((2 / (1 + np.exp(_margin)) - 1) ** 2) / len(_margin)
     # return np.sum(2 / (1 + np.exp(_margin))) / len(_margin)
 
 
 def grad_loss_func(_marg_i, _x_i):
-    _grad = 2 * _marg_i * _x_i
+    _grad = 2 * _marg_i * _x_i + L * _x_i
     # _a = np.exp(_marg_i)
     # _grad = -4 * (2 / (1 + _a) - 1) * _a / (1 + _a) ** 2 * _x_i
     # _grad = -2 / (1 + _a) ** 2 * _a * _x_i
@@ -35,21 +35,22 @@ def grad_loss_func(_marg_i, _x_i):
 
 def rms_meth(_g, _gamma, _grad_loss):
     _g = _g * _gamma + (1 - _gamma) * _grad_loss * _grad_loss
-    _nyu = etha * _grad_loss / (np.sqrt(_g) + eps0)
+    _nyu = eta * _grad_loss / (np.sqrt(_g) + eps0)
     return _nyu, _g
 
 
         # Model
 x = np.arange(0, 10.1, 0.1)
-y = 1 / (1 + 10 * np.square(x))
+# y = 1 / (1 + 10 * np.square(x))
+y = 400 + 3 * x - 10 * x ** 2 + x ** 3
 
-N = 8                   # Polynomial range
-L = 0.8                 # Weight for polynomial coefficients
-etha0 = 0.00000001       # Initial step changing of w
-lambd = 0.0001          # Память при подсчете эмпирического риска
-gamma = 0.9995          # Память при подсчете нормирующего множителя приращения коэффициентов
-eps0 = 0.0001             # Слагаемое для избежания деления на "0"
-n_iter = 150000
+N = 7                  # Polynomial range
+L = 0                 # Weight for polynomial coefficients
+eta0 = 0.001      # Initial step changing of w
+lambd = 0.001          # Память при подсчете эмпирического риска
+gamma = 0.995          # Память при подсчете нормирующего множителя приращения коэффициентов
+eps0 = 0.01             # Слагаемое для избежания деления на "0"
+n_iter = 100000
 
 X = np.array([[a ** n for n in range(N + 1)] for a in x])   # Вектора-аргументы размеченной последовательности
 # w = np.zeros(N + 1)                                         # Initial w
@@ -71,7 +72,7 @@ for k in range(n_iter):
     x_i = np.array([a ** n for n in range(N + 1)])  # Его вектор признаков
     margin_i = np.dot(x_i, w) - yy[i]               # Отклонение предсказания от размеченного отклика
     Li = loss_func(margin_i)                        # Функция потерь для i-того члена размеч. последоват.
-    etha = etha0 * (1 - k / n_iter)
+    eta = eta0 * (1 - k / n_iter)
     grad_Li = grad_loss_func(margin_i, x_i)  # Градиент функции потерь
 
     nyu, g = rms_meth(g, gamma, grad_Li)
@@ -88,6 +89,7 @@ yy_c = y[1:: 2]
 z_train = np.polyfit(xx, yy, N)
 z_calc = w[::-1]
 print(z_train)
+print(w[::-1])
 # p = np.poly1d(z_train)
 # y_fit = p(x)
 y_fit = predict_poly(x, z_train)
