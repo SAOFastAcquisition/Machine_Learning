@@ -29,3 +29,17 @@ while x_t < 30.1:
 
 plt.plot(x_n, flares_n)
 plt.show()
+
+# level_mod.assign_sub(learning_rate * dp1)
+        # edge_mod.assign_sub(learning_rate * dp2)
+        # width_mod.assign_sub(learning_rate * dp3)
+        # height_mod.assign_sub(learning_rate * dp4)
+        # pos_mod.assign_sub(learning_rate * dp5)
+        # width1_mod.assign_sub(learning_rate * dp6)
+
+# opt = tf.optimizers.SGD(learning_rate=3.0)                  # Классический стохастический градиентный метод
+# opt = tf.optimizers.SGD(momentum=0.1, learning_rate=3.0)    # Метод моментов  EPOCHS = 120
+# opt = tf.optimizers.SGD(momentum=0.1, nesterov=True, learning_rate=3.0)    # Метод Нестерова  EPOCHS = 120
+# opt = tf.optimizers.Adagrad(learning_rate=3.0)              # EPOCHS = 120
+# opt = tf.optimizers.Adadelta(learning_rate=50.0)            # EPOCHS = 60
+# opt = tf.optimizers.RMSprop(learning_rate=0.02)            # EPOCHS = 120
