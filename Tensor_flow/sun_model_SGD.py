@@ -148,9 +148,9 @@ axes.semilogy(x_n, data_n.numpy())
 axes.grid(True)
 plt.show()
 
-height_mod2 = tf.Variable(height_mod1, name='height')
-pos_mod2 = tf.Variable(pos_mod1, name='pos')
-width1_mod2 = tf.Variable(width1_mod1, name='width')
+# height_mod2 = tf.Variable(height_mod1, name='height')
+# pos_mod2 = tf.Variable(pos_mod1, name='pos')
+# width1_mod2 = tf.Variable(width1_mod1, name='width')
 
 level_mod, edge_mod_l, edge_mod_r, width_mod_l, width_mod_r, b, height_mod1, pos_mod1, width1_mod1 = \
     sun_optimiser(x_n, data_n, 300, 450, 2.5, 0)
