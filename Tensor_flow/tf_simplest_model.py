@@ -1,4 +1,5 @@
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import tensorflow as tf
@@ -10,17 +11,17 @@ class DenseNN(tf.Module):
         self.outputs = outputs
         self.fl_init = False
 
-    def __call__(self, x):
+    def __call__(self, _x):
         if not self.fl_init:
-            self.w = tf.random.truncated_normal((x.shape[-1], self.outputs), stddev=0.1, name='w')
+            self.w = tf.random.truncated_normal((_x.shape[-1], self.outputs), stddev=0.1, name='w')
             self.b = tf.zeros(self.outputs, dtype=tf.float32, name='b')
 
             self.w = tf.Variable(self.w)
             self.b = tf.Variable(self.b)
 
             self.fl_init = True
-        y = x @ self.w + self.b
-        return y
+        _y = _x @ self.w + self.b
+        return _y
 
 
 model = DenseNN(1)
@@ -29,10 +30,11 @@ print(model(tf.constant([[1.5, 2.0]])))
 x_train = tf.random.uniform((100, 2), minval=0, maxval=20)
 y_train = [a + b for a, b in x_train]
 
-loss = lambda x, y: tf.reduce_mean(tf.square(x-y))
+# loss = lambda x, y: tf.reduce_mean(tf.square(x - y))
+loss = lambda x, y: tf.reduce_mean(tf.square(x - y))
 opt = tf.optimizers.Adam(learning_rate=0.01)
 
-EPOCHS = 50
+EPOCHS = 70
 for n in range(EPOCHS):
     for x, y in zip(x_train, y_train):
         x = tf.expand_dims(x, axis=0)
