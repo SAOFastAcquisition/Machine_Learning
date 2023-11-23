@@ -129,11 +129,11 @@ width_mod_r = tf.Variable(7.0, name='right_slope')
 b = tf.Variable(500.0, name='ground')
 
 height_mod1 = tf.Variable([4000.0, 5000.0, 9000.0, 14000.0, 3000.0, 3000.0, 5000.0, 1000], name='height1')
-pos_mod1 = tf.Variable([161.0, 179.0, 191.0, 200.0, 222.0, 255.0, 266.0, 280], name='pos1')
+pos_mod1 = tf.Variable(np.linspace(161.0, 179.0, 7), name='pos1', dtype=float)
 width1_mod1 = tf.Variable([7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 7.0], name='width1')
-
+# [161.0, 179.0, 191.0, 200.0, 222.0, 255.0, 266.0, 280]
 level_mod, edge_mod_l, edge_mod_r, width_mod_l, width_mod_r, b, height_mod1, pos_mod1, width1_mod1 = \
-    sun_optimiser(x_n, data, 100, 225, 0.3, 1)
+    sun_optimiser(x_n, data, 300, 225, 0.3, 1)
 
 sun_calc = quiet_sun(x_n, level_mod, edge_mod_l, edge_mod_r, width_mod_l, width_mod_r) + \
            flare(x_n, height_mod1, pos_mod1, width1_mod1) + b
