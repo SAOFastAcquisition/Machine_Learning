@@ -138,13 +138,64 @@ def initial_cond1():
     return _ip0, _bottom_limits, _top_limits
 
 
+def initial_cond0():
+    # начальные приближения для трёх гауссианов
+    _ip0 = [30000., 140., 7.,
+            30000., 155., 7.,
+            30000., 170., 7.,
+            30000., 175., 7.,
+            30000., 190., 7.,
+
+            30000., 210., 7.,
+            30000., 225., 7.,
+            30000., 245., 7.,
+            30000., 260., 7.,
+            30000., 270., 7.,
+            30000., 275., 7.,
+            30000., 130., 280., 10.0,
+            5000.]
+
+    # верхняя граница
+    _top_limits = [30000., 170., 15.,
+                   30000., 170., 15.,
+                   30000., 170., 15.,
+                   30000., 200., 15.,
+                   30000., 200., 15.,
+
+                   30000., 230., 15.,
+                   30000., 230., 15.,
+                   30000., 280., 15.,
+                   30000., 280., 15.,
+                   30000., 280., 15.,
+                   30000., 280., 15.,
+                   30000., 140., 290., 25.,
+                   6000.]
+
+    # нижняя граница
+    _bottom_limits = [0, 135., 1.,
+                      0., 135., 1.,
+                      0., 135., 1.,
+                      0., 175., 1.,
+                      0., 175., 1.,
+
+                      0., 205., 1.,
+                      0., 205., 1.,
+                      0., 240., 1.,
+                      0., 240., 1.,
+                      0., 240., 1.,
+                      0., 240., 1.,
+                      0., 125., 275., 3.,
+                      0.]
+    return _ip0, _bottom_limits, _top_limits
+
+
 def load_param():
     return np.load("2023-02-17_04+16" + '_decomp.npy', allow_pickle=True)
 
 
 def load_data(_path):
     _data = np.load(_path, allow_pickle=True)
-    _y = _data[0][280:1330, 501]
+    _y = _data[0][280:1330, 491:501]
     _time = np.array(_data[2][280:1330]) * 8.3886e-3
     # plt.plot(_time, _y)
     # plt.show()
@@ -155,7 +206,7 @@ def param_analise():
     _param = load_param()
     _freq_mask = [1200, 1380, 1465, 1600, 1700, 2265, 2490, 2710, 2800, 2860]
     _arg = _freq_mask[-1::-1]
-    _x0 = _param[0:28:3, 3:].transpose()
+    _x0 = _param[0:33:3, 3:].transpose()
     plt.plot(_arg, _x0)
     plt.grid("both")
     plt.show()
@@ -163,17 +214,17 @@ def param_analise():
 
 
 if __name__ == '__main__':
-    # param = load_param()
-    # param_analise()
-    # X, Y = model()  Tensor_flow/
-    path1 = Path('Tensor_flow/2023-10-25_05-24_stocks.npy')
+    param = load_param()
+    param_analise()
+    # X, Y = model()  #Tensor_flow/
+    path1 = Path('2023-10-25_05-24_stocks.npy')
     # path1 = Path("Tensor_flow/2023-02-17_04+16" + '_scan_freq.npy')
 
     path2 = Path("Tensor_flow/2023-02-17_04+16" + '_time.npy')
     freq_mask = [1200, 1380, 1465, 1600, 1700, 2265, 2490, 2710, 2800, 2860]
 
     #               ***** Initial condition *****
-    ip0, bottom_limits, top_limits = initial_cond1()
+    ip0, bottom_limits, top_limits = initial_cond0()
     load_data(path1)
     Yw, X = load_data(path1)
 
@@ -192,38 +243,40 @@ if __name__ == '__main__':
     df = pd.DataFrame(data=initial_data, index=row_labels)
 
     # num = np.shape(Yw)
-    num = 1
+    num = 10
     for i in range(num):
         # Параметры составляющих вычисляются от бОльших частот к меньшим
         lc = num - 1 - i
-        Y1 = Yw
+        Y1 = Yw[:, lc]
         num_a = np.isfinite(Y1)
         Y = Y1[num_a]
         X = X[num_a]
         plt.plot(X, Y, 'r+', markersize=3)
+        if np.size(Y) > np.size(Y1) // 2:
+            #               ****** интерполяция экспериментальных данных ******
+            p, cov = curve_fit(nGauss, X, Y, p0=ip0, bounds=(bottom_limits, top_limits))
+            df[str(freq_mask[lc])] = p
+            # ip0 = p
+            print("Параметры грауссианов: ")
+            for pl in p:
+                print(pl)
 
-        #               ****** интерполяция экспериментальных данных ******
-        p, cov = curve_fit(nGauss, X, Y, p0=ip0, bounds=(bottom_limits, top_limits))
-        df[str(freq_mask[lc])] = p
-        # ip0 = p
-        print("Параметры грауссианов: ")
-        for pl in p:
-            print(pl)
+            #               ****** погрешность вычислений ******
+            print("Станд. отклонение: ", np.std(Y - nGauss(X, *p)))
+            slope, ic, r_value, p_value, std_err = \
+                stats.linregress(Y, nGauss(X, *p))
 
-        #               ****** погрешность вычислений ******
-        print("Станд. отклонение: ", np.std(Y - nGauss(X, *p)))
-        slope, ic, r_value, p_value, std_err = \
-            stats.linregress(Y, nGauss(X, *p))
-
-        #                   ****** вывод графиков ******
-        plt.ylabel('Антенная температура, К')
-        plt.xlabel('Время, сек')
-        plt.text(100, 15000, 'R$^2$=' + '%.4f' % r_value ** 2)
-        plotAllGauss(X, p)
-        plt.plot(X, nGauss(X, *p), 'g')
-        plt.grid('both')
-        plt.savefig('result.png')
-        plt.show()
+            #                   ****** вывод графиков ******
+            plt.ylabel('Антенная температура, К')
+            plt.xlabel('Время, сек')
+            plt.text(100, 15000, 'R$^2$=' + '%.4f' % r_value ** 2)
+            plotAllGauss(X, p)
+            plt.plot(X, nGauss(X, *p), 'g')
+            plt.grid('both')
+            plt.savefig('result.png')
+            plt.show()
+        else:
+            print('Too short sequence')
 
     np.save(Path("2023-02-17_04+16" + '_decomp'), df)
     pass
