@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-from scipy.signal import argrelextrema as agl
 from scipy import stats
 from pathlib import Path
 
@@ -38,6 +37,11 @@ def plotAllGauss(_x, _p):
 
 
 def model():
+    """
+    Возвращает модель Солнца = спокойное Солнце + 4 гауссианы. Второй аргумент во flare(x, 4, 20) -
+    полуширина функции Гаусса, третий - ее сдвиг относительно "0"
+    :return:
+    """
     x = np.arange(-140, 140.1, 0.1)
     q_sun = quiet_sun(x)
 
@@ -168,7 +172,7 @@ def initial_cond0():
                    30000., 280., 15.,
                    30000., 280., 15.,
                    30000., 280., 15.,
-                   30000., 140., 290., 25.,
+                   30000., 140., 285., 30.,
                    6000.]
 
     # нижняя граница
@@ -184,7 +188,7 @@ def initial_cond0():
                       0., 240., 1.,
                       0., 240., 1.,
                       0., 240., 1.,
-                      0., 125., 275., 3.,
+                      0., 125., 280., 3.,
                       0.]
     return _ip0, _bottom_limits, _top_limits
 
@@ -194,19 +198,23 @@ def load_param():
 
 
 def load_data(_path):
+    f_res = 3.904
     _data = np.load(_path, allow_pickle=True)
-    _y = _data[0][280:1330, 491:501]
+    _y0 = _data[0]
+    _num_s = [20, 70, 130, 190, 270, 320, 360, 390, 440, 490]
+    _y = _data[0][280:1330, _num_s]
     _time = np.array(_data[2][280:1330]) * 8.3886e-3
+    _f = [1000 + f_res / 2 + f_res * _n for _n in _num_s]
     # plt.plot(_time, _y)
     # plt.show()
-    return _y, _time
+    return _y, _time, _f
 
 
-def param_analise():
-    _param = load_param()
+def param_analise(_param=load_param()):
+    # _param = load_param()
     _freq_mask = [1200, 1380, 1465, 1600, 1700, 2265, 2490, 2710, 2800, 2860]
     _arg = _freq_mask[-1::-1]
-    _x0 = _param[0:33:3, 3:].transpose()
+    _x0 = (_param[0:33:3, 3:] / _param[33, 3:]).transpose()
     plt.plot(_arg, _x0)
     plt.grid("both")
     plt.show()
@@ -217,7 +225,7 @@ if __name__ == '__main__':
     param = load_param()
     param_analise()
     # X, Y = model()  #Tensor_flow/
-    path1 = Path('2023-10-25_05-24_stocks.npy')
+    path1 = Path('Tensor_flow/2023-10-25_05-24_stocks.npy')
     # path1 = Path("Tensor_flow/2023-02-17_04+16" + '_scan_freq.npy')
 
     path2 = Path("Tensor_flow/2023-02-17_04+16" + '_time.npy')
@@ -226,7 +234,7 @@ if __name__ == '__main__':
     #               ***** Initial condition *****
     ip0, bottom_limits, top_limits = initial_cond0()
     load_data(path1)
-    Yw, X = load_data(path1)
+    Yw, X1, f = load_data(path1)
 
     # X = np.load(path2, allow_pickle=True)[170:620]
 
@@ -240,7 +248,7 @@ if __name__ == '__main__':
     row_labels += ['a0', 'xl', 'xr', 'ws', 'b0']
 
     #            ****** DataFrame for component parameters ******
-    df = pd.DataFrame(data=initial_data, index=row_labels)
+    p_frame = pd.DataFrame(data=initial_data, index=row_labels)
 
     # num = np.shape(Yw)
     num = 10
@@ -249,34 +257,41 @@ if __name__ == '__main__':
         lc = num - 1 - i
         Y1 = Yw[:, lc]
         num_a = np.isfinite(Y1)
-        Y = Y1[num_a]
-        X = X[num_a]
-        plt.plot(X, Y, 'r+', markersize=3)
-        if np.size(Y) > np.size(Y1) // 2:
-            #               ****** интерполяция экспериментальных данных ******
-            p, cov = curve_fit(nGauss, X, Y, p0=ip0, bounds=(bottom_limits, top_limits))
-            df[str(freq_mask[lc])] = p
-            # ip0 = p
-            print("Параметры грауссианов: ")
-            for pl in p:
-                print(pl)
+        try:
+            Y = Y1[num_a]
+            X = X1[num_a]
+            plt.plot(X, Y, 'r+', markersize=3)
+            if np.size(Y) > np.size(Y1) // 2:
+                #               ****** интерполяция экспериментальных данных ******
+                p, cov = curve_fit(nGauss, X, Y, p0=ip0, bounds=(bottom_limits, top_limits))
+                p_frame[str(np.ceil(f[lc]))] = p
+                # ip0 = p
+                print("Параметры грауссианов: ")
+                for pl in p:
+                    print(pl)
 
-            #               ****** погрешность вычислений ******
-            print("Станд. отклонение: ", np.std(Y - nGauss(X, *p)))
-            slope, ic, r_value, p_value, std_err = \
-                stats.linregress(Y, nGauss(X, *p))
+                #               ****** погрешность вычислений ******
+                print("Станд. отклонение: ", np.std(Y - nGauss(X, *p)))
+                slope, ic, r_value, p_value, std_err = \
+                    stats.linregress(Y, nGauss(X, *p))
 
-            #                   ****** вывод графиков ******
-            plt.ylabel('Антенная температура, К')
-            plt.xlabel('Время, сек')
-            plt.text(100, 15000, 'R$^2$=' + '%.4f' % r_value ** 2)
-            plotAllGauss(X, p)
-            plt.plot(X, nGauss(X, *p), 'g')
-            plt.grid('both')
-            plt.savefig('result.png')
-            plt.show()
-        else:
-            print('Too short sequence')
+                #                   ****** вывод графиков ******
+                plt.ylabel('Антенная температура, К')
+                plt.xlabel('Время, сек')
+                plt.text(70, 15000, 'R$^2$=' + '%.4f' % r_value ** 2)
+                plt.text(70, 13000, f'f = {np.ceil(f[lc])} MHz')
+                plotAllGauss(X, p)
+                plt.plot(X, nGauss(X, *p), 'g')
+                plt.grid('both')
+                plt.savefig('result.png')
+                plt.show()
+            else:
+                print('Too short sequence')
+        except IndexError:
+            pass
 
-    np.save(Path("2023-02-17_04+16" + '_decomp'), df)
+    plt.plot(f[-1::-1], p_frame.loc['b0'][3:])
+    plt.show()
+
+    np.save(Path("2023-02-17_04+16" + '_decomp'), p_frame)
     pass
