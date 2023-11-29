@@ -18,9 +18,9 @@ def graph_contour_2d(*args):
     import matplotlib.font_manager as font_manager
     xval, yval, z, s, _info_txt, _current_file, _head = args
     x, y = np.meshgrid(xval, yval)
-    z = np.log10(z)
-
-    levels = MaxNLocator(nbins=15).tick_values(z.min(), z.max())
+    # z = np.log10(z)
+    a, b = z.min(), z.max()
+    levels = MaxNLocator(nbins=15).tick_values(0.95, 1.10)
     # pick the desired colormap, sensible levels, and define a normalization
     # instance which takes data values and translates those into levels.
     cmap = plt.get_cmap('jet')
@@ -61,8 +61,11 @@ def graph_contour_2d(*args):
 
 def load_data(_path='2023-10-25_05-24_stocks.npy'):
     f_res = 3.904
-    _data = np.load(Path('2023-10-25_05-24_stocks.npy'), allow_pickle=True)
+    _data = np.load(Path('2023-02-16_14-24_stocks.npy'), allow_pickle=True)
     _y0 = _data[0]
+    plt.plot(_y0[200])
+    plt.show()
+
     _num_s = [_n for _n in range(4, 197)] + \
              [_n for _n in range(264, 279)] + \
              [_n for _n in range(312, 394)] + \
@@ -90,11 +93,11 @@ if __name__ == '__main__':
     data_norm = scan_normalize(data)
     norm = np.mean(data_norm, axis=1)
     data_norm1 = data_norm.T / norm
-    plt.plot(freq, data_norm1[10, :])
+    # plt.plot(np.array(freq) / 3.e4, data_norm1[10, :])
     n = [55, 75, 120]
     t0 = 70
     dt = 5
-    # plt.plot(np.array(freq) / 3.e4, norm, label=f'average')
+    plt.plot(np.array(freq) / 3.e4, norm, label=f'average')
     for i in range(10):
         a = np.mean(data_norm1[t0 + i * dt:t0 + (i + 1) * dt, :], axis=0)
         a = signal_filtering(a, 1.0) + 0.01 * i
@@ -112,5 +115,5 @@ if __name__ == '__main__':
 
     s = 1
     _info_txt, _current_file, _head = 'a', 'b', 'c'
-    graph_contour_2d(freq, time, data_norm1, s, _info_txt, _current_file, _head)
+    graph_contour_2d(freq[125:181], time, data_norm1[:, 125:181], s, _info_txt, _current_file, _head)
 
