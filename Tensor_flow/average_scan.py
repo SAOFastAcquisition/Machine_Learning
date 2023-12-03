@@ -60,23 +60,24 @@ def graph_contour_2d(*args):
 
 
 def load_data(_path='2023-10-25_05-24_stocks.npy'):
+    _n1, _n2 = 493, 1055
     f_res = 3.904
     _data = np.load(Path(_path), allow_pickle=True)
     _y0 = _data[0]
     # c = _y0[600, 270]
-    # plt.plot(_y0[:, 270])
-    # plt.show()
+    plt.plot(_y0[:, 270])
+    plt.show()
 
     _num_s = [_n for _n in range(4, 197)] + \
              [_n for _n in range(264, 279)] + \
              [_n for _n in range(312, 394)] + \
              [_n for _n in range(435, 501)]
 
-    _yI = _data[0][571:1150, _num_s]
-    _yV = _data[1][571:1150, _num_s]
+    _yI = _data[0][_n1:_n2, _num_s]
+    _yV = _data[1][_n1:_n2, _num_s]
     _y = (_yI + _yV) / 2
     # _y = _yI
-    _time = np.array(_data[2][571:1150]) * 8.3886e-3
+    _time = np.array(_data[2][_n1:_n2]) * 8.3886e-3
     _f = [1000 + f_res / 2 + f_res * _n for _n in _num_s]
 
     plt.plot(_time, _y[:, 10], label=f'freq = {np.ceil(_f[10])}')
@@ -90,33 +91,33 @@ def load_data(_path='2023-10-25_05-24_stocks.npy'):
 
 
 if __name__ == '__main__':
-    path_stocks = '2023-03-01_01+28_stocks.npy'
+    path_stocks = '2023-11-09_01+24_stocks.npy'
     data, time, freq = load_data(path_stocks)
     data_norm = scan_normalize(data)
     norm = np.mean(data_norm, axis=1)
     data_norm1 = data_norm.T / norm
     # plt.plot(np.array(freq) / 3.e4, data_norm1[10, :])
-    n = [55, 75, 120]
+
     t0 = 20
     dt = 5
     # plt.plot(np.array(freq[125:181]), norm[125:181], label=f'average')
-    for i in range(10):
-        a = np.mean(data_norm1[t0 + i * dt:t0 + (i + 1) * dt, 125:181], axis=0)
+    for i in range(50):
+        a = np.mean(data_norm1[t0 + i * dt:t0 + (i + 1) * dt, :], axis=0)
         a = signal_filtering(a, 1.0) + 0.015 * i
         # plt.text(1500, 1.05-0.005 * i, f't = {np.ceil(time[t0 + dt / 2 + i * dt])} s')  + 0.01 * i
-        # plt.plot(np.array(freq[125:181]) / 3.e4, a, label=f't = {np.ceil(time[t0 + i * dt])} s')
-        plt.plot(np.array(freq[125:181]), a, label=f't = {np.ceil(time[t0 + i * dt])} s')
+        # plt.plot(np.array(freq[125:181]) / 3.e4, a, label=f't = {np.ceil(time[t0 + i * dt])} s') [125:181]
+        plt.plot(np.array(freq), a, label=f't = {np.ceil(time[t0 + i * dt])} s')
 
     plt.grid('both')
     plt.title(path_stocks[:-4])
     plt.ylabel('Normalized intensity')
-    # plt.xlabel('Wavenumber, cm_-1')
+    # plt.xlabel('Wavenumber, cm_-1') [:, 125:181]
     plt.xlabel('Frequency, MHz')
     plt.legend(loc=2)
     plt.show()
 
     s = 1
     _info_txt, _current_file, _head = 'a', 'b', 'c'
-    graph_contour_2d(freq[125:181], time, data_norm1[:, 125:181], s, _info_txt,
-                     'Normalized Antenna Temperature 2023-02-16_14-24_stocks', _head)
+    graph_contour_2d(freq, time, data_norm1, s, _info_txt,
+                     'Normalized Antenna Temperature ' + path_stocks[: -4], _head)
 
