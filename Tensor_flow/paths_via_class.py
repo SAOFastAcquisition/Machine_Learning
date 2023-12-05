@@ -73,6 +73,9 @@ class DataPaths(object):
             raise CustomError('Head path not found!')
         return _path, _convert_data_path
 
+    def stokes_path(self):
+        pass
+
     def treat_paths(self):
         _path = Path(self.head_path, self.main_dir, 'Data_treatment', str(self.data_dir) + '_treat')
         create_folder(_path)
