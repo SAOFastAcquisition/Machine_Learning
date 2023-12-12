@@ -2,7 +2,7 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 from scipy.signal import argrelextrema as agl
-from paths_via_class import DataPaths
+from Support_scripts.paths_via_class import DataPaths
 
 
 def plot_imf(_x, _y, _y1, _y2):
