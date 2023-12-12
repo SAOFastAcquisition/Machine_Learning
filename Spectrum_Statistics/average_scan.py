@@ -75,11 +75,11 @@ if __name__ == '__main__':
     # data_V = data_V.T / aver_f
     # data_V = data_V.T / aver_t
     # data_norm = data_V
-    t0 = 150
+    t0 = 50
     dt = 5
     fig, ax = plt.subplots(1, figsize=(14, 7))
     # ax.plot(np.array(freq[5:edge0]), norm[5:edge0], label=f'average')
-    for i in range(1):
+    for i in range(3):
         a_L = np.nanmean(data_norm_L[t0 + i * dt:t0 + (i + 1) * dt, 90:edge0], axis=0)
         a_L = np.nanmean(data_norm_L[t0 + i * dt:t0 + (i + 1) * dt, 90:edge0], axis=0)
         a_L = signal_filtering(a_L, 1.0)  # + 0.015 * i
@@ -116,5 +116,5 @@ if __name__ == '__main__':
         print('Picture is saved')
 
     info_txt, head = 'a', 'b'
-    # graph_contour_2d(freq[5:edge0], time, data_norm[:, 5:edge0], 4, info_txt, path_treatment, head)
+    graph_contour_2d(freq[5:edge0], time, data_norm_R[:, 5:edge0], 4, info_txt, path_treatment, head)
     # graph_3d(freq[5:edge0], time, data_norm[:, 5:edge0], 6, path_treatment, head)
