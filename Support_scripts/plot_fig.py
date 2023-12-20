@@ -69,7 +69,7 @@ def graph_contour_2d(*args):
     # title1, title2 = pic_title()
     ax1.set_title('Normalized Antenna Temperature ' + str(_pass_treat)[-16:] + ' Stokes I', fontsize=20)
     ax1.set_xlabel('Freq, MHz', fontsize=18)
-    ax1.set_ylabel('Time, s', fontsize=18)
+    ax1.set_ylabel('Angle, arcs', fontsize=18)
 
     plt.grid(which='major', color='#666666', linestyle='-')
     plt.minorticks_on()

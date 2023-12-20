@@ -41,7 +41,7 @@ def rms_meth(_g, _gamma, _grad_loss):
 
         # Model
 x = np.arange(0, 10.1, 0.1)
-# y = 1 / (1 + 10 * np.square(x))
+# y = 1 / (1 + 10 * np.square(_x))
 y = 400 + 3 * x - 10 * x ** 2 + x ** 3
 
 N = 7                  # Polynomial range
@@ -91,7 +91,7 @@ z_calc = w[::-1]
 print(z_train)
 print(w[::-1])
 # p = np.poly1d(z_train)
-# y_fit = p(x)
+# y_fit = p(_x)
 y_fit = predict_poly(x, z_train)
 y_calc = predict_poly(x, z_calc)
 fig, axes = plt.subplots(1, 2, figsize=(12, 6))

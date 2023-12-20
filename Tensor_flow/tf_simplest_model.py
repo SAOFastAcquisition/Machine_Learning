@@ -30,7 +30,7 @@ print(model(tf.constant([[1.5, 2.0]])))
 x_train = tf.random.uniform((100, 2), minval=0, maxval=20)
 y_train = [a + b for a, b in x_train]
 
-# loss = lambda x, y: tf.reduce_mean(tf.square(x - y))
+# loss = lambda _x, y: tf.reduce_mean(tf.square(_x - y))
 loss = lambda x, y: tf.reduce_mean(tf.square(x - y))
 opt = tf.optimizers.Adam(learning_rate=0.01)
 
