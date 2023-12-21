@@ -77,7 +77,7 @@ if __name__ == '__main__':
     main_dir = data_file[0:4]
     data_dir = f'{data_file[0:4]}_{data_file[5:7]}_{data_file[8:10]}sun'
 
-    path_obj = DataPaths(data_file, data_dir, main_dir)
+    path_obj = DataPaths(data_file,  data_dir, main_dir)
     path_stokes = Path(str(path_obj.converted_data_file_path) + '_stocks.npy')
     path_treatment = path_obj.treatment_data_file_path
 
