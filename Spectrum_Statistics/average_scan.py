@@ -23,10 +23,9 @@ def scan_normalize(_data):
 
 
 def load_data(_n1, _n2, _path='2023-10-25_05-24_stocks.npy'):
-    f_res = 3.904
+    f_res = 7.8125 / 2        #   3.904
     _data = np.load(Path(_path), allow_pickle=True)
     _y0 = _data[0]
-    # c = _y0[600, 270]
     # plt.plot(_y0[:, 150])
     # plt.grid('both')
     # plt.show()
@@ -42,7 +41,7 @@ def load_data(_n1, _n2, _path='2023-10-25_05-24_stocks.npy'):
     _yR = (_yI - _yV) / 2
     # _y = _yI
     _time = np.array(_data[2]) * 8.3886e-3
-    _f = [1000 + f_res / 2 + f_res * (_n + 4) for _n in _num_s]
+    _f = [1000 + f_res / 2 + f_res * _n for _n in _num_s]
 
     plt.plot(_time, _y0[:, 150 + 4])
     plt.plot(_time[_n1:_n2], _yI[:, 150], label=f'freq = {np.ceil(_f[150])} MHz')
@@ -57,7 +56,7 @@ def load_data(_n1, _n2, _path='2023-10-25_05-24_stocks.npy'):
 
 
 def time_to_angle(_time, _time_center):
-    _scale = 1960 / 162
+    _scale = 1960 / 166
     _angle = [-(_t - _time_center) * _scale for _t in _time][-1::-1]
 
     return _angle
@@ -73,7 +72,7 @@ def sun_in_angle(_yl, _yr, _time, _time_c):
 
 if __name__ == '__main__':
     # path_stokes = '../Tensor_flow/2023-11-09_01+24_stocks.npy'
-    data_file = '2022-06-18_01+28'
+    data_file = '2023-12-02_06+04'
     main_dir = data_file[0:4]
     data_dir = f'{data_file[0:4]}_{data_file[5:7]}_{data_file[8:10]}sun'
 
@@ -81,17 +80,18 @@ if __name__ == '__main__':
     path_stokes = Path(str(path_obj.converted_data_file_path) + '_stocks.npy')
     path_treatment = path_obj.treatment_data_file_path
 
-    n1, n2 = 750, 1330  # Начальный и конечный отсчеты времени диска Солнца
+    n1, n2 = 425, 1095  # Начальный и конечный отсчеты времени диска Солнца
     edge1 = 197         # Последний частотный отсчет перед первым режекторным фильтром
     edge0 = 197         # Последний частотный отсчет при визуализации данных
-    angle0 = 750  # Начальное положение на диске Солнца центра ДН
-    dt = 23  # Шаг в отсчетах угла для отображения нормализованных левой и правой поляризаций
+    angle0 = 200        # Начальное положение на диске Солнца центра ДН
+    dt = 46     # Шаг в отсчетах угла для отображения нормализованных левой и правой поляризаций
+    k = 3       # Количество одновременно рассматриваемых азимутов на Солнце
 
     data_L, data_R, time, freq = load_data(n1, n2, path_stokes)
     data_norm_L, aver_f1, aver_t1 = scan_normalize(data_L)
     data_norm_R, aver_f2, aver_t2 = scan_normalize(data_R)
     l = len(time)
-    data_norm_L, data_norm_R, angle_w = sun_in_angle(data_norm_L, data_norm_R, time, 264)
+    data_norm_L, data_norm_R, angle_w = sun_in_angle(data_norm_L, data_norm_R, time, 192)
     angle = angle_w[l - n2:l - n1]
     t0 = np.where(angle >= angle0)[0][0]    # Начальное положение центра ДН в отсчетах угла
 
@@ -104,7 +104,8 @@ if __name__ == '__main__':
     #           ****** Рисунок 1 - спектры нормализованных интенсивностей LP & RP ******
     ax1 = plt.subplot(gs[0, 0:2])
     # ax.plot(np.array(freq[5:edge0]), norm[5:edge0], label=f'average')
-    for i in range(3):
+
+    for i in range(k):
         a_L = data_norm_L[t0 + i * dt, 90:edge0]
         a_R = data_norm_R[t0 + i * dt, 90:edge0]
         a_L = signal_filtering(a_L, 1.0)
@@ -127,7 +128,7 @@ if __name__ == '__main__':
     #                           ****** Рисунок 2 позиционный ******
     ax2 = plt.subplot(1, 3, 3)
     plt.plot(angle, data_I,  label=f'freq = {np.ceil(freq[150])} MHz')
-    num_x = np.array([t0 + i * dt for i in range(3)])
+    num_x = np.array([t0 + i * dt for i in range(k)])
     #               ****** Позиции на скане Солнца спектров интенсивностей ******
     x1 = angle[num_x]
     y1 = data_I[num_x]
