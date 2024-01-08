@@ -110,7 +110,7 @@ def graph_3d(*args):
     ax.set_zlabel('Normalized Antenna Temperature, K', fontsize=16)
     plt.tick_params(axis='both', which='major', labelsize=10)
 
-    ax.plot_surface(x, y, _z, rstride=1, cstride=1, cmap='tab20b') # cmap=cm.jet
+    ax.plot_surface(x, y, _z, rstride=1, cstride=1, cmap='tab20b')  # cmap=cm.jet
 
     _format = 'png'
     plt.show()
@@ -124,41 +124,27 @@ def path_to_pic(file_path, flag, _format='png'):
                 '3': 'scan3D_00',
                 '4': 'norm_stokes2D_00',
                 '5': 'norm_stokes_00',
-                '6': 'norm_stokes3D_00'}
+                '6': 'norm_stokes3D_00',
+                '7': 'stokes_dyn_angle_00'}
 
     try:
         _add_pass0 = _comment[str(flag)]
     except:
         print('Check the "flag"')
 
-    # if flag == 1:
-    #     _add_pass0 = 'spectrum_00'
-    # elif flag == 2:
-    #     _add_pass0 = 'colour2D_00'
-    # elif flag == 4:
-    #     _add_pass0 = '2D_norm_stokes_00'
-    # elif flag == 5:
-    #     _add_pass0 = 'norm_stokes_00'
-    # elif flag == 6:
-    #     _add_pass0 = '3D_norm_stokes_00'
-    # elif flag == 3:
-    #     _add_pass0 = 'pic3D_00'
-    # else:
-    #     _add_pass0 = 'scan_00'
-
-    l = len(_add_pass0)
+    _l = len(_add_pass0)
     add_pass1 = _add_pass0 + '.' + _format
     path1 = Path(file_path, add_pass1)
     if not os.path.isfile(path1):
         pass
     else:
         while os.path.isfile(Path(file_path, add_pass1)):
-            num = int(_add_pass0[l - 2:l]) + 1
+            num = int(_add_pass0[_l - 2:_l]) + 1
             num_str = str(num)
             if num >= 10:
-                _add_pass0 = _add_pass0[:l - 2] + num_str
+                _add_pass0 = _add_pass0[:_l - 2] + num_str
             else:
-                _add_pass0 = _add_pass0[:l - 2] + '0' + num_str
+                _add_pass0 = _add_pass0[:_l - 2] + '0' + num_str
             add_pass1 = _add_pass0 + '.' + _format
 
     return add_pass1
