@@ -9,7 +9,7 @@ from Support_scripts.paths_via_class import DataPaths
 
 
 @save_fig
-def look_intensity_base(_angle, _arg):
+def look_intensity_base(_angle, _arg, _n1, _n2):
 
     with open(path_stokes_base, 'rb') as inp:
         _norm_intensity_base = pickle.load(inp)     # Загрузка базы нормализованных интенсивностей за день
@@ -28,7 +28,7 @@ def look_intensity_base(_angle, _arg):
     #                           ****** Рисунок 1 левая поляризация ******
     _ax1 = plt.subplot(2, 1, 1)
     for _a, _b in zip(_angle_selection.polar_left, _angle_selection.azimuth):
-        plt.plot(_arg, _a, label=f'left: azimuth = {_b} deg')
+        plt.plot(_arg[_n1:_n2], _a[_n1:_n2], label=f'left: azimuth = {_b} deg')
 
     _ax1.set_ylim(ymax=1.2)
     plt.grid('both')
@@ -43,7 +43,7 @@ def look_intensity_base(_angle, _arg):
     #                           ****** Рисунок 2 правая поляризация ******
     _ax2 = plt.subplot(2, 1, 2)
     for _a, _b in zip(_angle_selection.polar_right, _angle_selection.azimuth):
-        plt.plot(_arg, _a, label=f'right: azimuth = {_b} deg')
+        plt.plot(_arg[_n1:_n2], _a[_n1:_n2], label=f'right: azimuth = {_b} deg')
     #                                       ************
     plt.grid('on')
     _ax2.set_ylabel('Normalized intensity')
@@ -68,7 +68,7 @@ def freq_arg():
 
     _f = [1000 + f_res / 2 + f_res * _n for _n in _num_s]
 
-    return np.array(_f)
+    return np.array(_f), _num_s
 
 
 if __name__ == '__main__':
@@ -83,5 +83,9 @@ if __name__ == '__main__':
 
     f_res = 7.8125 / 2
     edge0 = 193
-    freq = freq_arg()
-    look_intensity_base(-600, freq[350:500])
+    f1, f2 = 2250, 2540
+
+    freq, num_s = freq_arg()
+    s1 = np.where(freq > f1)[0][0]
+    s2 = np.where(freq > f2)[0][0]
+    look_intensity_base(-600, freq, s1, s2)

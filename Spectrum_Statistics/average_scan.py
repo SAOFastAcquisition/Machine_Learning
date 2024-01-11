@@ -66,8 +66,8 @@ def load_data(_n1, _n2, _path='2023-10-25_05-24_stocks.npy'):
 
 
 def time_to_angle(_time, _time_center):
-    _sun_width_time = 166.          # Время прохождения солнечного диска через ДН
-    _sun_width = 1960               # Принятый угловой размер Солнца в арксек
+    _sun_width_time = 166.  # Время прохождения солнечного диска через ДН
+    _sun_width = 1960  # Принятый угловой размер Солнца в арксек
     _scale = _sun_width / _sun_width_time
     _angle = [-(_t - _time_center) * _scale for _t in _time][-1::-1]
 
@@ -82,36 +82,44 @@ def sun_in_angle(_yl, _yr, _time, _time_c):
     return _yl, _yr, _angle
 
 
-def save_norm_intensity(_intensity_dict):
+def save_norm_intensity(_data_norm_L, _data_norm_R, _angle):
+
     # Если файла хранениия коэффициентов не существует, то создаем его, если существует - загружаем
-    # _intensity_ser = pd.DataFrame(_intensity_dict)
-    # _columns_names = ['date', 'azimuth', 'angle', 'polar_left', 'polar_right']
+
     if not os.path.isfile(path_stokes_base):
+        _intensity_dict = {'date': data_file[:10], 'azimuth': data_file[-3:], 'angle': int(_angle[0]),
+                           'polar_left': [_data_norm_L[0]],
+                           'polar_right': [_data_norm_R[0]]
+                           }
         _norm_intensity_base = pd.DataFrame(_intensity_dict)
         with open(path_stokes_base, 'wb') as out:
             pickle.dump(_norm_intensity_base, out)
     else:
         with open(path_stokes_base, 'rb') as inp:
             _norm_intensity_base = pickle.load(inp)
+    for i in range(41):
 
-    idx = _norm_intensity_base.loc[(_norm_intensity_base.date == _intensity_dict['date'])
-                                   & (_norm_intensity_base.azimuth == _intensity_dict['azimuth'])
-                                   & (_norm_intensity_base.angle == _intensity_dict['angle'])].index  #
+        idx = _norm_intensity_base.loc[(_norm_intensity_base.date == data_file[:10])
+                                       & (_norm_intensity_base.azimuth == data_file[-3:])
+                                       & (_norm_intensity_base.angle == int(_angle[i]))].index  #
 
-    if not len(idx):
-        _norm_intensity_base = pd.concat([_norm_intensity_base, pd.DataFrame(_intensity_dict)],
-                                         axis=0, ignore_index=False)
-        with open(path_stokes_base, 'wb') as out:
-            pickle.dump(_norm_intensity_base, out)
-    else:
-        pass
+        if not len(idx):
+            _intensity_dict = {'date': data_file[:10], 'azimuth': data_file[-3:], 'angle': int(_angle[i]),
+                               'polar_left': [_data_norm_L[i]],
+                               'polar_right': [_data_norm_R[i]]
+                               }
+            _norm_intensity_base = pd.concat([_norm_intensity_base, pd.DataFrame(_intensity_dict)],
+                                             axis=0, ignore_index=False)
 
+        else:
+            pass
+    with open(path_stokes_base, 'wb') as out:
+        pickle.dump(_norm_intensity_base, out)
 
 @save_fig
 def look_intensity_base(_angle):
-
     with open(path_stokes_base, 'rb') as inp:
-        _norm_intensity_base = pickle.load(inp)     # Загрузка базы нормализованных интенсивностей за день
+        _norm_intensity_base = pickle.load(inp)  # Загрузка базы нормализованных интенсивностей за день
 
     _angle_selection = _norm_intensity_base[(_norm_intensity_base.angle < _angle + 10)
                                             & (_norm_intensity_base.angle > _angle - 10)]
@@ -159,7 +167,7 @@ def look_intensity_base(_angle):
 
 if __name__ == '__main__':
 
-    data_file = '2023-12-02_07+00'
+    data_file = '2023-12-02_13-24'
     main_dir = data_file[0:4]
     data_dir = f'{data_file[0:4]}_{data_file[5:7]}_{data_file[8:10]}sun'
 
@@ -168,33 +176,40 @@ if __name__ == '__main__':
     path_stokes_base = Path(path_obj.converted_dir_path, 'norm_intensity_base.npy')
     path_treatment = path_obj.treatment_data_file_path
 
-    save = 'n'              # Сохранять в базу нормированные интенсивности?
-    look_intensity = 'n'    # Мода просмотра нормированных интенсивностей от азимута
+    save = 'y'  # Сохранять в базу нормированные интенсивности?
 
     n1, n2 = 408, 1113  # Начальный и конечный отсчеты времени диска Солнца
-    t_center = 192      # Время кульминации от начала записи
+    t_center = 192  # Время кульминации от начала записи
     edge1 = 197  # Последний частотный отсчет перед первым режекторным фильтром
     edge0 = 193  # Последний частотный отсчет при визуализации данных
     start0 = 90  # Последний частотный отсчет при визуализации данных
-    angle0 = -800  # Начальное положение на диске Солнца центра ДН
-    dt = 46  # Шаг в отсчетах угла для отображения нормализованных левой и правой поляризаций
-    k = 1  # Количество одновременно рассматриваемых азимутов на Солнце
+    angle0 = [-1000. + 50 * i for i in range(41)]  # Начальное положение на диске Солнца центра ДН
 
     data_L, data_R, time, freq = load_data(n1, n2, path_stokes)
-    if look_intensity == 'y':
-        look_intensity_base(-500)
-
     # data_norm_L, aver_f1, aver_t1 = scan_self_normalize(data_L)
     # data_norm_R, aver_f2, aver_t2 = scan_self_normalize(data_R)
     data_norm_L, aver_f1, aver_t1 = scan_intense_normalize(data_L, data_R + data_L)
     data_norm_R, aver_f2, aver_t2 = scan_intense_normalize(data_R, data_R + data_L)
     l = len(time)
     data_norm_L, data_norm_R, angle_w = sun_in_angle(data_norm_L, data_norm_R, time, t_center)
+
+    #              *** DATA filtering ***
+    data_norm_L = signal_filtering(data_norm_L, 1)
+    data_norm_R = signal_filtering(data_norm_R, 1)
+
     ratio_LR = data_norm_L / data_norm_R
     angle = angle_w[l - n2:l - n1]
-    t0 = np.where(angle >= angle0)[0][0]  # Начальное положение центра ДН в отсчетах угла
+    t0 = [np.where(angle >= s)[0][0] for s in angle0]  # Начальное положение центра ДН в отсчетах угла
+
+    if save == 'y':
+        save_norm_intensity(data_norm_L[t0], data_norm_R[t0], angle[t0])
 
     data_I = data_L[-1::-1, 150] + data_R[-1::-1, 150]
+
+    num_angle = t0
+    a_L = data_norm_L[num_angle, start0:edge0]
+    a_R = data_norm_R[num_angle, start0:edge0]
+    r_LR = ratio_LR[num_angle, start0:edge0]
 
     #                                ****** Рисунок ******
     fig = plt.figure(figsize=[15, 9])
@@ -204,33 +219,30 @@ if __name__ == '__main__':
     ax1 = plt.subplot(gs[0, 0:2])
     # ax.plot(np.array(freq[5:edge0]), norm[5:edge0], label=f'average')
 
-    for i in range(k):
-        num_angle = t0 + i * dt
-        a_L = data_norm_L[num_angle, start0:edge0]
-        a_R = data_norm_R[num_angle, start0:edge0]
-        r_LR = ratio_LR[num_angle, start0:edge0]
-        a_L = signal_filtering(a_L, 1.0)
-        a_R = signal_filtering(a_R, 1.0)
-        r_LR = signal_filtering(r_LR, 1.0)
+    # for i in range(k):
+    #
+    #     if save == 'y':
+    #         intensity_row = {'date': data_file[:10], 'azimuth': data_file[-3:], 'angle': int(angle[num_angle]),
+    #                          'polar_left': [signal_filtering(data_norm_L[num_angle, :], 1.0)],
+    #                          'polar_right': [signal_filtering(data_norm_R[num_angle, :], 1.0)],
+    #                          'ratio_LR': [signal_filtering(ratio_LR[num_angle, :], 1.0)]}
+    #         save_norm_intensity(intensity_row)
+    #
+    leg1 = [f'left: angle = {np.ceil(angle[s])} arcs' for s in num_angle]
+    leg2 = [f'right: angle = {np.ceil(angle[s])} arcs' for s in num_angle]
 
-        if save == 'y':
-            intensity_row = {'date': data_file[:10], 'azimuth': data_file[-3:], 'angle': int(angle[num_angle]),
-                             'polar_left': [signal_filtering(data_norm_L[num_angle, :], 1.0)],
-                             'polar_right': [signal_filtering(data_norm_R[num_angle, :], 1.0)],
-                             'ratio_LR': [signal_filtering(ratio_LR[num_angle, :], 1.0)]}
-            save_norm_intensity(intensity_row)
-
-        # ax.plot(np.array(freq[5:edge0]) / 3.e4, a, label=f't = {np.ceil(time[t0 + i * dt])} s') [5:edge0]
-        plt.plot(np.array(freq)[start0:edge0], a_L, '-.', label=f'left: angle = {np.ceil(angle[t0 + i * dt])} arcs')
-        plt.plot(np.array(freq)[start0:edge0], a_R, label=f'right: angle = {np.ceil(angle[t0 + i * dt])} arcs')
-        # plt.plot(np.array(freq)[start0:edge0], r_LR, label=f'ratio L/R: angle = {np.ceil(angle[t0 + i * dt])} arcs')
-
+    line1 = ax1.plot(np.array(freq)[start0:edge0], a_L.T, '-.')
+    line2 = plt.plot(np.array(freq)[start0:edge0], a_R.T)
+    ax1.legend(line1 + line2, leg1 + leg2, loc=2)
+    # leg3 = [f'ratio L/R: angle = {np.ceil(angle[s])} arcs' for s in num_angle]
+    # line3 = plt.plot(np.array(freq)[start0:edge0], r_LR.T)
+    # ax1.legend(line3, leg3, loc=2)
     plt.grid('both')
     plt.title(str(path_treatment)[-16:] + ' Intensities L & R')
     plt.ylabel('Normalized intensity')
     # ax.xlabel('Wave number, cm_-1') # [:, 5:edge1]
     plt.xlabel('Frequency, MHz')
-    plt.legend(loc=2)
+
     plt.grid(which='major', color='#666666', linestyle='-')
     plt.grid(which='minor', color='#999999', linestyle='-', alpha=0.5)
     plt.minorticks_on()
@@ -238,7 +250,7 @@ if __name__ == '__main__':
     #                           ****** Рисунок 2 позиционный ******
     ax2 = plt.subplot(1, 3, 3)
     plt.plot(angle, data_I, label=f'freq = {np.ceil(freq[150])} MHz')
-    num_x = np.array([t0 + i * dt for i in range(k)])
+    num_x = np.array(t0)
     #               ****** Позиции на скане Солнца спектров интенсивностей ******
     x1 = angle[num_x]
     y1 = data_I[num_x]
@@ -259,7 +271,7 @@ if __name__ == '__main__':
     ax2.set_ylabel('Antenna Temperature, K')
     plt.xlabel('Angle, arcs')
     plt.legend(loc=2)
-    # plt.show()
+    plt.show()
 
     #                       ****** Формирование адреса и сохранение рисункa ******
     add_path0 = path_to_pic(path_treatment, 5, 'png')
