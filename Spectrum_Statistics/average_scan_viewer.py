@@ -73,7 +73,7 @@ def freq_arg():
 
 if __name__ == '__main__':
 
-    data_file = '2023-12-05_13-24'
+    data_file = '2023-12-02_01+24'
     main_dir = data_file[0:4]
     data_dir = f'{data_file[0:4]}_{data_file[5:7]}_{data_file[8:10]}sun'
     path_obj = DataPaths(data_file, data_dir, main_dir)
@@ -84,4 +84,4 @@ if __name__ == '__main__':
     f_res = 7.8125 / 2
     edge0 = 193
     freq = freq_arg()
-    look_intensity_base(100, freq[90:edge0])
+    look_intensity_base(-600, freq[350:500])
