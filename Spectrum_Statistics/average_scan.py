@@ -32,7 +32,7 @@ def scan_intense_normalize(_data, _data_norm):
     return _dat, _aver_f, _aver_t
 
 
-def load_data(_n1, _n2, _path='2023-10-25_05-24_stocks.npy'):
+def load_data(_n1, _n2, _path='2024-01-02_02+20_stocks.npy'):
     f_res = 7.8125 / 2  # 3.904
     _data = np.load(Path(_path), allow_pickle=True)
     _y0 = _data[0]
@@ -66,8 +66,8 @@ def load_data(_n1, _n2, _path='2023-10-25_05-24_stocks.npy'):
 
 
 def time_to_angle(_time, _time_center):
-    _sun_width_time = 166.  # Время прохождения солнечного диска через ДН
-    _sun_width = 1960  # Принятый угловой размер Солнца в арксек
+    _sun_width_time = 180.  # Время прохождения солнечного диска через ДН
+    _sun_width = 1900  # Принятый угловой размер Солнца в арксек
     _scale = _sun_width / _sun_width_time
     _angle = [-(_t - _time_center) * _scale for _t in _time][-1::-1]
 
@@ -97,7 +97,7 @@ def save_norm_intensity(_data_norm_L, _data_norm_R, _angle):
     else:
         with open(path_stokes_base, 'rb') as inp:
             _norm_intensity_base = pickle.load(inp)
-    for i in range(39):
+    for i in range(35):
 
         idx = _norm_intensity_base.loc[(_norm_intensity_base.date == data_file[:10])
                                        & (_norm_intensity_base.azimuth == data_file[-3:])
@@ -117,6 +117,7 @@ def save_norm_intensity(_data_norm_L, _data_norm_R, _angle):
         pickle.dump(_norm_intensity_base, out)
 
 
+@save_fig
 def plot_norm_intensities(_arg, _y_L, _y_R):
 
     #                                ****** Рисунок ******
@@ -129,8 +130,8 @@ def plot_norm_intensities(_arg, _y_L, _y_R):
     _leg1 = [f'left: angle = {np.ceil(angle[s])} arcs' for s in num_angle]
     _leg2 = [f'right: angle = {np.ceil(angle[s])} arcs' for s in num_angle]
 
-    _line1 = _ax1.plot(np.array(_arg), _y_L.T, '-.')
-    _line2 = plt.plot(np.array(_arg), _y_R.T)
+    _line1 = _ax1.semilogy(np.array(_arg), _y_L.T, '-.')
+    _line2 = _ax1.semilogy(np.array(_arg), _y_R.T)
     _ax1.legend(_line1 + _line2, _leg1 + _leg2, loc=2)
     # _leg3 = [f'ratio L/R: angle = {np.ceil(angle[s])} arcs' for s in num_angle]
     # _line3 = plt.plot(np.array(freq), r_LR.T)
@@ -148,7 +149,7 @@ def plot_norm_intensities(_arg, _y_L, _y_R):
     #                           ****** Рисунок 2 позиционный ******
     _ax2 = plt.subplot(1, 3, 3)
     plt.plot(angle, data_I, label=f'freq = {np.ceil(_arg[60])} MHz')
-    num_x = np.array(t0)
+    num_x = np.array(num_angle)
     #               ****** Позиции на скане Солнца спектров интенсивностей ******
     x1 = angle[num_x]
     y1 = data_I[num_x]
@@ -170,25 +171,12 @@ def plot_norm_intensities(_arg, _y_L, _y_R):
     plt.xlabel('Angle, arcs')
     plt.legend(loc=2)
     plt.show()
-
-    #                       ****** Формирование адреса и сохранение рисункa ******
-    add_path0 = path_to_pic(path_treatment, 5, 'png')
-    path_pic = Path(path_treatment, add_path0)
-    flag_save = save_question()
-    if flag_save == 'no':
-        if os.path.isfile(path_pic):
-            os.remove(path_pic)
-            print('Picture is not saved')
-        else:
-            print('File not found')
-    else:
-        _fig.savefig(path_pic)
-        print('Picture is saved')
+    return _fig, path_treatment, 5, 'png'
 
 
 if __name__ == '__main__':
 
-    data_file = '2023-10-20_05-24'
+    data_file = '2024-01-02_12-20'
     main_dir = data_file[0:4]
     data_dir = f'{data_file[0:4]}_{data_file[5:7]}_{data_file[8:10]}sun'
 
@@ -199,12 +187,12 @@ if __name__ == '__main__':
 
     save = 'n'  # Сохранять в базу нормированные интенсивности?
 
-    n1, n2 = 440, 1128  # Начальный и конечный отсчеты времени диска Солнца
-    t_center = 197  # Время кульминации от начала записи
+    n1, n2 = 421, 1125  # Начальный и конечный отсчеты времени диска Солнца
+    t_center = 200  # Время кульминации от начала записи
     edge1 = 197  # Последний частотный отсчет перед первым режекторным фильтром
     edge0 = 193  # Последний частотный отсчет при визуализации данных
     start0 = 90  # Последний частотный отсчет при визуализации данных
-    angle0 = [-950. + 50 * i for i in range(39)]  # Начальное положение на диске Солнца центра ДН
+    angle0 = [-850. + 50 * i for i in range(37)]  # Начальное положение на диске Солнца центра ДН
 
     data_L, data_R, time, freq = load_data(n1, n2, path_stokes)
     # data_norm_L, aver_f1, aver_t1 = scan_self_normalize(data_L)
@@ -220,7 +208,7 @@ if __name__ == '__main__':
 
     ratio_LR = data_norm_L / data_norm_R
     angle = angle_w[l - n2:l - n1]
-    t0 = [np.where(angle >= s)[0][0] for s in angle0]  # Начальное положение центра ДН в отсчетах угла
+    t0 = [np.where(angle >= s)[0][0] for s in angle0]  # Положение центра ДН в отсчетах угла
 
     if save == 'y':
         save_norm_intensity(data_norm_L[t0], data_norm_R[t0], angle[t0])
@@ -232,8 +220,18 @@ if __name__ == '__main__':
     a_R = data_norm_R[num_angle, start0:edge0]
     r_LR = ratio_LR[num_angle, start0:edge0]
 
-    plot_norm_intensities(freq[start0:edge0], a_L, a_R)
+    # plot_norm_intensities(freq[start0:edge0], a_L, a_R)
 
     info_txt, head = 'Right polarization', 'a'
-    # graph_contour_2d(freq[5:edge0], angle, data_norm_R[:, 5:edge0], 4, info_txt, path_treatment, head)
+    graph_contour_2d(freq[5:edge0], angle, data_norm_L[:, 5:edge0], 4, info_txt, path_treatment, head)
     # graph_3d(freq[5:edge0], time, data_norm[:, 5:edge0], 6, path_treatment, head)
+
+    theta = [-800, -650, -500]
+    data_L_a, data_R_a, a = sun_in_angle(data_L, data_R, time, t_center)
+    num_angle = [np.where(angle >= s)[0][0] for s in theta]  # Положение центра ДН в отсчетах угла
+    data_L_fig = data_L_a[num_angle, start0:edge0]
+    data_R_fig = data_R_a[num_angle, start0:edge0]
+    # plot_norm_intensities(freq[start0:edge0], data_L_fig, data_R_fig)
+    a_L = data_norm_L[num_angle, start0:edge0]
+    a_R = data_norm_R[num_angle, start0:edge0]
+    plot_norm_intensities(freq[start0:edge0], a_L, a_R)
