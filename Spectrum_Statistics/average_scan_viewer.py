@@ -1,4 +1,5 @@
 import os
+import gzip
 from pathlib import Path
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
@@ -172,8 +173,14 @@ def plot_norm_intensities(_arg, _y_L, _y_R, _angles, _az, _polar):
 
 
 def load_base(_base_path):
-    with open(path_stokes_base, 'rb') as inp:
-        _norm_intensity_base = pickle.load(inp)
+    if os.path.exists(f'{str(_base_path)}.gz'):
+        filename_out = f'{str(_base_path)}.gz'
+        with gzip.open(filename_out, "rb") as fin:
+            _norm_intensity_base = np.load(fin, allow_pickle=True)
+    else:
+        # _norm_intensity_base = np.load(_path1, allow_pickle=True)
+        with open(path_stokes_base, 'rb') as inp:
+            _norm_intensity_base = pickle.load(inp)
 
     return _norm_intensity_base
 
