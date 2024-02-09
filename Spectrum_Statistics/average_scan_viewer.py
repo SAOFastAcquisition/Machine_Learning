@@ -115,12 +115,14 @@ def plot_norm_intensities(_arg, _y_L, _y_R, _angles, _az, _polar):
     elif _polar == 'both':
         _line1 = _ax1.plot(np.array(_arg), _y_L.T, '.-')
         _line2 = _ax1.plot(np.array(_arg), _y_R.T)
-        _ax1.legend(_line1 + _line2, _leg1 + _leg2, loc=2)
+        # _ax1.legend(_line1 + _line2, _leg1 + _leg2, loc=2)
+        _ax1.legend(_line1 + _line2, _leg1 + _leg2, bbox_to_anchor=(1, 1), loc="upper left")
         plt.title(str(path_treatment)[-10:] + ' Intensities L & R')
     else:
         _line1 = _ax1.plot(np.array(_arg), _y_L.T, '.-')
         _line3 = plt.plot(np.array(_arg), r_LR.T)
-        _ax1.mlegend(_line1 + _line3, _leg1 + _leg3, loc=2)
+        # _ax1.legend(_line1 + _line3, _leg1 + _leg3, loc=2)
+        _ax1.legend(_line1 + _line3, _leg1 + _leg3, bbox_to_anchor=(1, 1), loc="upper left")
     plt.grid('both')
     plt.ylabel('Normalized intensity')
     # ax.xlabel('Wave number, cm_-1') # [:, 5:edge1]
@@ -230,7 +232,7 @@ def freq_arg():
 
 
 if __name__ == '__main__':
-    date_file = '2024-01-02'
+    date_file = '2024-01-04'
     data_file = date_file + '_01+24'    # Используется этим скриптом для сохранения рисунков
     main_dir = date_file[0:4]
     data_dir = f'{date_file[0:4]}_{date_file[5:7]}_{date_file[8:10]}sun'
@@ -243,7 +245,7 @@ if __name__ == '__main__':
 
     f_res = 7.8125 / 2
     edge0 = 193
-    f1, f2 = 1050, 1720
+    f1, f2 = 2250, 2520
     ind_polar = 3           # 1 - left, 2 - right, 3 - both polarization
 
     freq, num_s = freq_arg()
@@ -253,12 +255,12 @@ if __name__ == '__main__':
 
     # Посмотреть частоные зависимости нормализованных интенсивностей
     # при разных азимутах и фиксированном позиционном угле
-    # look_intensity_base(600, freq, s1, s2, base)
+    # look_intensity_base(-200, freq, s1, s2, base)
 
     # Посмотреть частотные зависимости нормализованных интенсивностей
     # для разных позиционных углов при фиксированном азимуте
-    angles = [850]
-    az = [0, -4, -8, -12, -16, -20, -24]
+    angles = [-450]
+    az = [8, 4, 0]
 
     filt_ang = filter_position(angles)
     filt_az = filter_azimuth(az, base)

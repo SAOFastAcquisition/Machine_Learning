@@ -5,8 +5,9 @@ import glob as gb
 from pathlib import Path
 from Support_scripts.paths_via_class import DataPaths
 
+
 if __name__ == '__main__':
-    # current_data_file = '2023-12-15_01+24'
+
     date = '2024-01-04'
     main_dir = date[0:4]
     data_dir = f'{date[0:4]}_{date[5:7]}_{date[8:]}sun'
