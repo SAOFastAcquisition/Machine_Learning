@@ -232,7 +232,7 @@ def freq_arg():
 
 
 if __name__ == '__main__':
-    date_file = '2024-01-04'
+    date_file = '2024-02-14'
     data_file = date_file + '_01+24'    # Используется этим скриптом для сохранения рисунков
     main_dir = date_file[0:4]
     data_dir = f'{date_file[0:4]}_{date_file[5:7]}_{date_file[8:10]}sun'
@@ -259,8 +259,8 @@ if __name__ == '__main__':
 
     # Посмотреть частотные зависимости нормализованных интенсивностей
     # для разных позиционных углов при фиксированном азимуте
-    angles = [-450]
-    az = [8, 4, 0]
+    angles = [-950, 950]
+    az = [8, 4]
 
     filt_ang = filter_position(angles)
     filt_az = filter_azimuth(az, base)
@@ -276,7 +276,7 @@ if __name__ == '__main__':
     xl = np.array([s[s1:s2] for s in x_l])
     xr = np.array([s[s1:s2] for s in x_r])
     param = [s for s in param_a]
-    xl = signal_filtering(xl, 1)
-    xr = signal_filtering(xr, 1)
+    # xl = signal_filtering(xl, 1)
+    # xr = signal_filtering(xr, 1)
     plot_norm_intensities(arg, xl, xr, param, az0, polar[ind_polar])
     pass

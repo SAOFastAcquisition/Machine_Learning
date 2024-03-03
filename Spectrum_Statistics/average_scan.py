@@ -37,9 +37,9 @@ def load_data(_n1, _n2, _path='2024-01-02_02+20_stocks.npy'):
     f_res = 7.8125 / 2  # 3.904
     _data = np.load(Path(_path), allow_pickle=True)
     _y0 = _data[0]
-    plt.plot(_y0[:, 150])
-    plt.grid('both')
-    plt.show()
+    # plt.plot(_y0[:, 150])
+    # plt.grid('both')
+    # plt.show()
 
     _num_s = [_n for _n in range(4, edge1)] + \
              [_n for _n in range(264, 279)] + \
@@ -97,7 +97,7 @@ def save_norm_intensity(_data_norm_L, _data_norm_R, _angle):
     else:
         with open(path_stokes_base, 'rb') as inp:
             _norm_intensity_base = pickle.load(inp)
-    for i in range(35):
+    for i in range(41):
 
         idx = _norm_intensity_base.loc[(_norm_intensity_base.date == data_file[:10])
                                        & (_norm_intensity_base.azimuth == data_file[-3:])
@@ -175,7 +175,7 @@ def plot_norm_intensities(_arg, _y_L, _y_R):
 
 if __name__ == '__main__':
 
-    data_file = '2024-01-05_13-24'
+    data_file = '2024-02-14_13-24'
     main_dir = data_file[0:4]
     data_dir = f'{data_file[0:4]}_{data_file[5:7]}_{data_file[8:10]}sun'
 
@@ -184,14 +184,14 @@ if __name__ == '__main__':
     path_stokes_base = Path(path_obj.converted_dir_path, 'norm_intensity_base.npy')
     path_treatment = path_obj.treatment_data_file_path
 
-    save = 'n'  # Сохранять в базу нормированные интенсивности?
+    save = 'y'  # Сохранять в базу нормированные интенсивности?
 
     n1, n2 = 439, 1116  # Начальный и конечный отсчеты времени диска Солнца
     t_center = 200  # Время кульминации от начала записи
     edge1 = 200  # Последний частотный отсчет перед первым режекторным фильтром
-    edge0 = 193  # Последний частотный отсчет при визуализации данных
+    edge0 = 180  # Последний частотный отсчет при визуализации данных
     start0 = 90  # Последний частотный отсчет при визуализации данных
-    angle0 = [-850. + 50 * i for i in range(36)]  # Начальное положение на диске Солнца центра ДН
+    angle0 = [-1000. + 50 * i for i in range(41)]  # Начальное положение на диске Солнца центра ДН
 
     data_L, data_R, time, freq = load_data(n1, n2, path_stokes)
     # data_norm_L, aver_f1, aver_t1 = scan_self_normalize(data_L)
@@ -224,13 +224,13 @@ if __name__ == '__main__':
     # plot_norm_intensities(freq[start0:edge0], a_L, a_R)
 
     info_txt, head = 'Left polarization', 'a'
-    graph_contour_2d(freq[5:edge0], angle, data_norm_L[:, 5:edge0], 4, info_txt, path_treatment, head)
+    # graph_contour_2d(freq[5:edge0], angle, data_norm_L[:, 5:edge0], 4, info_txt, path_treatment, head)
     info_txt, head = 'Right polarization', 'a'
-    graph_contour_2d(freq[5:edge0], angle, data_norm_R[:, 5:edge0], 4, info_txt, path_treatment, head)
+    # graph_contour_2d(freq[5:edge0], angle, data_norm_R[:, 5:edge0], 4, info_txt, path_treatment, head)
     # graph_3d(freq[5:edge0], angle, data_norm_L[:, 5:edge0], 6, path_treatment, head)
 
     # Определение положений на Солнце для отображения на рис. нормированных интенсивностей
-    theta = [-850, -300, 750]
+    theta = [-950, 950]
     num_angle = [np.where(angle >= s)[0][0] for s in theta]  # Положение центра ДН в отсчетах угла
 
     data_L_a, data_R_a, a = sun_in_angle(data_L, data_R, time, t_center,
